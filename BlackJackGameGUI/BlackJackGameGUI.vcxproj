@@ -80,10 +80,23 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="BlackJackGameGUI.cpp" />
+    <ClCompile Include="BlackJackGame_V0.1.cpp" />
     <ClCompile Include="Button.cpp" />
+    <ClCompile Include="Card.cpp" />
+    <ClCompile Include="Dealer.cpp" />
+    <ClCompile Include="Deck.cpp" />
+    <ClCompile Include="GameEngine.cpp" />
+    <ClCompile Include="Person.cpp" />
+    <ClCompile Include="Player.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Button.hpp" />
+    <ClInclude Include="Card.h" />
+    <ClInclude Include="Dealer.h" />
+    <ClInclude Include="Deck.h" />
+    <ClInclude Include="GameEngine.h" />
+    <ClInclude Include="Person.h" />
+    <ClInclude Include="Player.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
