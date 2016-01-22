@@ -32,7 +32,7 @@ class GameEngine
 	public:
 		void printGameHeader();
 		void menuPrintingControl();
-		void menuHandlingControl(vector<Card> &deckCards, Player& player, Dealer& dealer, int* money);
+		void menuHandlingControl(vector<Card> &deckCards, Player& player, Dealer& dealer, int money);
 
 		bool validateUserMenuInput();
 
@@ -41,8 +41,10 @@ class GameEngine
 		bool getInsurance(){ return _showInsuranceOption; }
 		bool getNewCard(){ return _showNewCardOption; }
 		bool getStand(){ return _showStandOption; }
+		int getPlayerBet(){ return _playerBet; }
 
 		string getUserInputForMenu(){ return _userInputForMenu; }
+		void setUserInputForMenu(string userInput);
 
 		void setSplit(bool split);
 		void setDouble(bool doub);

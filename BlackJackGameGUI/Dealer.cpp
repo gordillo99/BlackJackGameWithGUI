@@ -36,12 +36,11 @@ void Dealer::printDealerHand()
 	cout << "\n";
 }
 
-void Dealer::printDealerHandWithHiddenCard()
+vector<Card> Dealer::printDealerHandWithHiddenCard()
 {
-	cout << "\nDealer's Hand\n\n";
-	Card firstCard = getDealerHand().at(0);
-	firstCard.printCardValueAndSuit();
-	cout << "Card: ???????????\n"; //printing the mysterious card
+	vector<Card> firstCard;
+	firstCard.push_back(getDealerHand().at(0));
+	return firstCard;
 }
 
 void Dealer::playAndDrawFromDeck()

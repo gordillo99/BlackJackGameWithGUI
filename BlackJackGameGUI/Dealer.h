@@ -20,7 +20,7 @@ public:
 
 	void dealCards(vector<Card> &deckCards, vector<Card> &playerHand);
 	void printDealerHand();
-	void printDealerHandWithHiddenCard();
+	vector<Card> printDealerHandWithHiddenCard();
 	vector<int>& getDealerHandValues(){ return _dealerHandValues; }
 	vector<Card>& getDealerHand(){ return _dealerHand; }
 	void playAndDrawFromDeck();

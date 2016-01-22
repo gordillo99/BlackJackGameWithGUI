@@ -7,6 +7,11 @@
 
 using namespace std;
 
+void Player::setMoney(int money)
+{
+	_money = money;
+}
+
 void Player::printPlayerMoney()
 {
 	cout << "Player Money: $" << _money << "\n";
@@ -42,7 +47,7 @@ int Player::betMoney()
 			cout << "Invalid number entered. Please enter a valid number.\n";
 		}
 
-		if (moneyValue > *_money)
+		if (moneyValue > _money)
 		{
 			cout << "Amount of money entered exceeds the current amount of money you have.\n";
 			continueLoop = true;

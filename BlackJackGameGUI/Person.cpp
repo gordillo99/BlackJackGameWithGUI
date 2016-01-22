@@ -25,7 +25,7 @@ int Person::calculateTotalAndPrintHand(vector<Card> &handToPrint, vector<int> &h
 
 	if (printHand)
 	{
-		cout << "\n"<< name <<"'s Hand\n\n";
+		cout << "\n" << name << "'s Hand\n\n";
 	}
 
 	int total = 0;
@@ -78,32 +78,32 @@ int Person::calculateTotalAndPrintHand(vector<Card> &handToPrint, vector<int> &h
 	/*
 	if (total > 21) //if the aces being 11 exceeds 21
 	{
-		bool continueChangingAceValues = false;
+	bool continueChangingAceValues = false;
 
-		do
-		{
-			for (vector<int>::iterator it = handValues.begin(); it != handValues.end(); ++it)
-			{
-				if (*it == 11)
-				{
-					it = handValues.erase(it);
-					it = handValues.insert(it, 1);
+	do
+	{
+	for (vector<int>::iterator it = handValues.begin(); it != handValues.end(); ++it)
+	{
+	if (*it == 11)
+	{
+	it = handValues.erase(it);
+	it = handValues.insert(it, 1);
 
-					total = 0;
+	total = 0;
 
-					for (vector<int>::iterator ite = handValues.begin(); ite != handValues.end(); ++ite)
-					{
-						total += *ite;
-					}
+	for (vector<int>::iterator ite = handValues.begin(); ite != handValues.end(); ++ite)
+	{
+	total += *ite;
+	}
 
-					if (total < 21)
-					{
-						continueChangingAceValues = false;
-						break;
-					}
-				}
-			}
-		} while (continueChangingAceValues);
+	if (total < 21)
+	{
+	continueChangingAceValues = false;
+	break;
+	}
+	}
+	}
+	} while (continueChangingAceValues);
 	}
 	*/
 	if (printHand)

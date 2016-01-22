@@ -31,6 +31,11 @@ void GameEngine::setNewCard(bool newCard)
 	_showNewCardOption = newCard;
 }
 
+void GameEngine::setUserInputForMenu(string userInput)
+{
+	_userInputForMenu = userInput;
+}
+
 void GameEngine::setInsurance(bool insurance)
 {
 	_showInsuranceOption = insurance;
@@ -53,7 +58,7 @@ void GameEngine::printGameHeader()
 	cout << "------------------------------------------------------------------------------------------------------\n";
 }
 
-void GameEngine::menuHandlingControl(vector<Card> &deckCards, Player& player, Dealer& dealer, int* money)
+void GameEngine::menuHandlingControl(vector<Card> &deckCards, Player& player, Dealer& dealer, int money)
 {
 	_userDecidedToSplit = false;
 	_userDecidedToStand = false;
@@ -71,7 +76,7 @@ void GameEngine::menuHandlingControl(vector<Card> &deckCards, Player& player, De
 		dealerHandBusted = false;
 		playerTotal1 = player.Person::calculateTotalAndPrintHand(player.getPlayerHand(), player.getPlayerHandValues(), true, "Player");
 
-		if (player.getPlayerHand().at(0).getValue() == player.getPlayerHand().at(1).getValue() && firstTurnFlag && _playerBet * 2 < *money)
+		if (player.getPlayerHand().at(0).getValue() == player.getPlayerHand().at(1).getValue() && firstTurnFlag && _playerBet * 2 < money)
 		{
 			setSplit(true);
 		}
@@ -89,7 +94,7 @@ void GameEngine::menuHandlingControl(vector<Card> &deckCards, Player& player, De
 			setInsurance(false);
 		}
 
-		if (_playerBet * 2 < *money && firstTurnFlag)
+		if (_playerBet * 2 < money && firstTurnFlag)
 		{
 			setDouble(true);
 		}

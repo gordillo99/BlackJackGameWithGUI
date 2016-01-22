@@ -22,19 +22,19 @@ void Card::printCardValueAndSuit()
 	switch (getSuit())
 	{
 	case 1:
-		suitName = "Hearts";
+		suitName = "Clubs";
 		break;
 
 	case 2:
-		suitName = "Diamonds";
-		break;
-
-	case 3:
 		suitName = "Spades";
 		break;
 
+	case 3:
+		suitName = "Hearts";
+		break;
+
 	case 4:
-		suitName = "Clubs";
+		suitName = "Diamonds";
 		break;
 	default:
 		suitName = "Error: Non-Existant Suit";
