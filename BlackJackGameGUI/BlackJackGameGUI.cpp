@@ -55,6 +55,11 @@ sf::Text dealerHandText("Dealer's Hand", font);
 //flags
 bool showBettingGUI = true; //Shows the bet and increase/decrease bet buttons
 bool showUserButtons = false;
+bool showDoubleDown = false;
+bool showHit = false;
+bool showInsurance = false;
+bool showSplit = false;
+bool showStay = false;
 
 void betAction()
 {
@@ -163,11 +168,10 @@ vector<sf::Sprite> createCardSprites(vector<Card> givenCards, int type)
 		sf::Texture* newTexture = new sf::Texture();
 		newTexture->loadFromFile("CardsSprite.png");
 		sf::Sprite* newCard = new sf::Sprite(*newTexture);
-		newCard->setTextureRect(sf::IntRect(currentCard.getSuit() * CARD_SPRITE_WIDTH, currentCard.getValue() * CARD_SPRITE_HEIGHT, CARD_SPRITE_WIDTH, CARD_SPRITE_HEIGHT));
+		newCard->setTextureRect(sf::IntRect((currentCard.getValue() - 1)*CARD_SPRITE_WIDTH, (currentCard.getSuit() - 1) * CARD_SPRITE_HEIGHT, CARD_SPRITE_WIDTH, CARD_SPRITE_HEIGHT));
 		newCard->setPosition(firstXPositionOfCards, firstYPositionOfCards);
 		createdSprites.push_back(*newCard);
 	}
-
 	return createdSprites;
 }
 
@@ -337,9 +341,10 @@ int main()
 
 			dealer->dealCards(deck->getDeckCards(), player->getPlayerHand());
 
-			//ADD NEW CODE TO THIS METHOD
 			vector<sf::Sprite> dealerSprites = createCardSprites(dealer->printDealerHandWithHiddenCard(), 0);
 			cardsToRender.insert(cardsToRender.end(), dealerSprites.begin(), dealerSprites.end());
+			vector<sf::Sprite> playerSprites = createCardSprites(player->getPlayerHand(), 1);
+			cardsToRender.insert(cardsToRender.end(), playerSprites.begin(), playerSprites.end());
 		}
 		
 		/*
