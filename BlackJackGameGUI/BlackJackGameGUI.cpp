@@ -60,7 +60,7 @@ bool showDoubleDown = false;
 bool showHit = true; //hit is always available
 bool showInsurance = false;
 bool showSplit = false;
-bool showStay = false;
+bool showStay = true;
 
 //user input flags
 bool userHits = false;
@@ -347,7 +347,10 @@ int main()
 	bool firstHandBusted = false;
 	bool secondHandBusted = false;
 	bool dealerHandBusted = false;
-	int playerTotal1;
+	int playerTotal1 = 0;
+	int playerTotal2 = 0;
+
+	int dealersTotal = 0;
 
 	while (window.isOpen())
 	{
@@ -382,6 +385,16 @@ int main()
 		//game engine action
 		if (gameStage == 1)
 		{
+			//reset these variables
+			firstTurnFlag = true;
+			keepMainLoopGoing = true;
+
+			firstHandBusted = false;
+			secondHandBusted = false;
+			dealerHandBusted = false;
+			playerTotal1 = 0;
+			playerTotal2 = 0;
+
 			gameStage++;
 			playerTurnNumber = 0; //resets the player turn counter
 			gameEngine->setPlayerBet(playerCurrentBet);
@@ -435,7 +448,6 @@ int main()
 
 			if (userHits)
 			{
-				gameStage++;
 				userHits = false;
 				if (!userHasSplit)
 				{
@@ -468,43 +480,34 @@ int main()
 			{
 				userSplits = false;
 				ge.splitCards(player->getPlayerHand(), player->getPlayerHand2());
-				ge.setSplit(true);
+				userHasSplit = true;
 			}
 			else if (userInsures)
 			{
 				userInsures = false;
 				//TODO: google these rules...
 			}
-		}
-
-		if (gameStage == 4)
-		{
-			//check to see if user has busted etc
-		}
-		/*
-		do
-		{
 
 			if (playerTotal1 > 21)
 			{
 				firstHandBusted = true;
 
-				if (!ge.getSplit())
+				if (!userHasSplit)
 				{
-					break;
+					gameStage++;
 				}
 				else
 				{
 					if (firstHandBusted && secondHandBusted)
 					{
-						break;
+						gameStage++;
 					}
 				}
 			}
 
-			if (ge.getSplit()) //check that none of the hands have busted
+			if (userHasSplit) //check that none of the hands have busted
 			{
-				if (playerTotal1 > 21)
+				if (playerTotal2 > 21)
 				{
 					secondHandBusted = true;
 
@@ -514,92 +517,89 @@ int main()
 					}
 				}
 			}
-
-		} while (keepMainLoopGoing);
-
-		if (playerTotal1 > 21)
-		{
-			firstHandBusted = true;
 		}
 
-		if (ge.getSplit()) //check that none of the hands have busted
+		if (gameStage == 4)
 		{
-			if (player->Person::calculateTotalAndPrintHand(player->getPlayerHand2(), player->getPlayerHandValues2(), false, "Player") > 21)
+			dealersTotal = 0;
+			bool keepLoopGoing = false;
+
+			do
 			{
-				secondHandBusted = true;
-			}
+				if (firstHandBusted)
+				{
+					cout << "Player's hand is " << playerTotal1 << ". Player has busted.\nPlayer has lost $" << playerCurrentBet << "\n";
+					player->setMoney(money - playerCurrentBet);
+					playerMoneyCounter -= playerCurrentBet;
+
+				}
+				else
+				{
+					//prints dealer's hand and calculates its value
+					dealersTotal = dealer->calculateTotalAndPrintHand(dealer->getDealerHand(), dealer->getDealerHandValues(), true, "Dealer");
+
+					if (dealersTotal > 21)
+					{
+						//indicate that dealer has busted
+						cout << "Dealer's hand has busted with a total of " << dealersTotal << "\n";
+						dealerHandBusted = true;
+						break;
+					}
+					else if (dealersTotal > 16 && dealersTotal < 22)
+					{
+						break;
+					}
+					else if (dealersTotal < 17)
+					{
+						//dealer hits
+						cout << "Dealer hits.\n";
+						ge.hitMethod(deckCards, dealer->getDealerHand());
+						keepLoopGoing = true;
+					}
+				}
+
+			} while (keepLoopGoing);
+			gameStage++;
 		}
-
-		int dealersTotal = 0;
-		bool keepLoopGoing = false;
-
-		do
+		//TODO: CHANGE ALL OF THIS TO GRAPHICAL TEXT
+		if (gameStage == 5)
 		{
-			if (firstHandBusted)
+			if (!firstHandBusted)
 			{
-				cout << "Player's hand is " << playerTotal1 << ". Player has busted.\nPlayer has lost $" << ge.getPlayerBet() << "\n";
-				player->setMoney(money - ge.getPlayerBet());
-			}
-			else
-			{
-				//prints dealer's hand and calculates its value
-				dealersTotal = dealer->Person::calculateTotalAndPrintHand(dealer->getDealerHand(), dealer->getDealerHandValues(), true, "Dealer");
-
-				if (dealersTotal > 21)
+				if (!dealerHandBusted)
 				{
-					//indicate that dealer has busted
-					cout << "Dealer's hand has busted with a total of " << dealersTotal << "\n";
-					dealerHandBusted = true;
-					break;
+					cout << "Dealer's Total: " << dealersTotal << "\nPlayers's Total: " << playerTotal1 << "\n";
+					if (dealersTotal > playerTotal1)
+					{
+						cout << "Dealer has a higher hand. You have lost $" << playerCurrentBet << ".\n";
+						player->setMoney(money - playerCurrentBet);
+						playerMoneyCounter -= playerCurrentBet;
+					}
+					else if (dealersTotal == playerTotal1)
+					{
+						cout << "Dealer and Player are tied. No money was lost/earnt.\n";
+					}
+					else if (playerTotal1 > dealersTotal)
+					{
+						cout << "Player has a higher hand. You have won $" << playerCurrentBet << ".\n";
+						player->setMoney(money + playerCurrentBet);
+						playerMoneyCounter += playerCurrentBet;
+					}
 				}
-				else if (dealersTotal > 16 && dealersTotal < 22)
+				else
 				{
-					break;
-				}
-				else if (dealersTotal < 17)
-				{
-					//dealer hits
-					cout << "Dealer hits.\n";
-					ge.hitMethod(deckCards, dealer->getDealerHand());
-					keepLoopGoing = true;
-				}
-			}
-
-		} while (keepLoopGoing);
-
-		if (!firstHandBusted)
-		{
-			if (!dealerHandBusted)
-			{
-				cout << "Dealer's Total: " << dealersTotal << "\nPlayers's Total: " << playerTotal1 << "\n";
-				if (dealersTotal > playerTotal1)
-				{
-					cout << "Dealer has a higher hand. You have lost $" << ge.getPlayerBet() << ".\n";
-					player->setMoney(money - ge.getPlayerBet());
-				}
-				else if (dealersTotal == playerTotal1)
-				{
-					cout << "Dealer and Player are tied. No money was lost/earnt.\n";
-				}
-				else if (playerTotal1 > dealersTotal)
-				{
-					cout << "Player has a higher hand. You have won $" << ge.getPlayerBet() << ".\n";
+					cout << "You have won $" << ge.getPlayerBet() << ".\n";
 					player->setMoney(money + ge.getPlayerBet());
 				}
 			}
-			else
+
+			if (player->getMoney() <= 0)
 			{
-				cout << "You have won $" << ge.getPlayerBet() << ".\n";
-				player->setMoney(money + ge.getPlayerBet());
+				cout << "\n GAME OVER\n\n You have run out of money. Insert more money to play again.\n";
+				exit(0);
 			}
 		}
 
-		if (player->getMoney() <= 0)
-		{
-			cout << "\n GAME OVER\n\n You have run out of money. Insert more money to play again.\n";
-			exit(0);
-		}
-		*/
 		window.clear();
 
 		//betting controls
@@ -627,7 +627,7 @@ int main()
 		{
 			window.draw(*it);
 		}
-
+		//TODO:
 		//ADD DEALLOCATING CODE FOR CARDSTORENDER AND ITS TEXTURES!!!!!!!!!!!!!!!
 
 		//display window
