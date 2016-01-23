@@ -275,11 +275,12 @@ void GameEngine::menuHandlingControl(vector<Card> &deckCards, Player& player, De
 	}
 }
 
-void GameEngine::hitMethod(vector<Card> &deckCards, vector<Card> &playerHand) //adds one card to player's hand
+Card GameEngine::hitMethod(vector<Card> &deckCards, vector<Card> &playerHand) //adds one card to player's hand
 {
 	Card firstPlayerCard = deckCards.at(0);
 	deckCards.erase(deckCards.begin());
 	playerHand.push_back(firstPlayerCard);
+	return firstPlayerCard;
 }
 
 void GameEngine::splitCards(vector<Card> &playerHand, vector<Card> &playerHand2) //splits player's hand

@@ -16,19 +16,19 @@ using namespace std;
 
 void menuHandlingControl(GameEngine ge, vector<Card> &deckCards, Player& player, Dealer& dealer, int money); //prototype
 
+//card pixel size constants
 const int CARD_SPRITE_WIDTH = 73;
 const int CARD_SPRITE_HEIGHT = 98;
+
+//user's x position for cards
+int userCardXPosition = 300;
+int userCardYPosition = 400;
 
 //Vital variable for game flow and loop control 
 int gameStage = 0;
 
 /*
-	Stage 0 = user place bets
-	Stage 1 = cards are dealt
-	Stage 3 = user selects to hit/stay/insure/split (go to 4)
-	Stage 4 = cards are dealt (go to 3 as long as necessary)
-	Stage 5 = Dealer Plays
-	Stage 6 = Game Ends
+	update the game stage catalogue
 */
 
 sf::Font font;
@@ -36,6 +36,7 @@ sf::Font font;
 //player stat variables
 int playerCurrentBet = 0;
 int playerMoneyCounter = 500;
+int playerTurnNumber = 0;
 
 //button declaration
 Button enterBetButton(font, { 70.f, 70.f });
@@ -52,14 +53,24 @@ sf::Text playerCurrentBetText(to_string(playerCurrentBet), font);
 sf::Text playerCurrentMoneyText("Player's Money: " + to_string(playerMoneyCounter), font);
 sf::Text dealerHandText("Dealer's Hand", font);
 
-//flags
+//show button flags
 bool showBettingGUI = true; //Shows the bet and increase/decrease bet buttons
 bool showUserButtons = false;
 bool showDoubleDown = false;
-bool showHit = false;
+bool showHit = true; //hit is always available
 bool showInsurance = false;
 bool showSplit = false;
 bool showStay = false;
+
+//user input flags
+bool userHits = false;
+bool userStays = false;
+bool userSplits = false;
+bool userInsures = false;
+bool userDoubleDowns = false;
+
+//user status flags
+bool userHasSplit = false;
 
 void betAction()
 {
@@ -99,30 +110,35 @@ void decreaseAction()
 
 void hitAction()
 {
-
+	userHits = true;
+	playerTurnNumber++;
 }
 
 void splitAction()
 {
-
+	userSplits = true;
+	playerTurnNumber++;
 }
 
 void stayAction()
 {
-
+	userStays = true;
+	playerTurnNumber++;
 }
 
 void insuranceAction()
 {
-
+	userInsures = true;
+	playerTurnNumber++;
 }
 
 void doubleDownAction()
 {
-
+	userDoubleDowns = true;
+	playerTurnNumber++;
 }
 
-vector<sf::Sprite> createCardSprites(vector<Card> givenCards, int type)
+vector<sf::Sprite> createFirstRoundCardSprites(vector<Card> givenCards, int type)
 {
 	vector<sf::Sprite> createdSprites;
 	float firstXPositionOfCards = 0;
@@ -144,10 +160,10 @@ vector<sf::Sprite> createCardSprites(vector<Card> givenCards, int type)
 		}
 			break;
 
-		case 1: //player
+		case 1: //player first time
 		{
-			firstXPositionOfCards = 300;
-			firstYPositionOfCards = 400;
+			firstXPositionOfCards = userCardXPosition;
+			firstYPositionOfCards = userCardYPosition;
 		}
 			break;
 		case 2: //dealer final play
@@ -164,6 +180,12 @@ vector<sf::Sprite> createCardSprites(vector<Card> givenCards, int type)
 		{
 			firstXPositionOfCards += 80;
 		}
+
+		if (type == 1)
+		{
+			userCardXPosition += 80;
+		}
+
 		Card currentCard = *it;
 		sf::Texture* newTexture = new sf::Texture();
 		newTexture->loadFromFile("CardsSprite.png");
@@ -173,6 +195,16 @@ vector<sf::Sprite> createCardSprites(vector<Card> givenCards, int type)
 		createdSprites.push_back(*newCard);
 	}
 	return createdSprites;
+}
+
+sf::Sprite createPlayerCardSprite(Card currentCard, int yPosition, int xPosition)
+{
+	sf::Texture* newTexture = new sf::Texture();
+	newTexture->loadFromFile("CardsSprite.png");
+	sf::Sprite* newCard = new sf::Sprite(*newTexture);
+	newCard->setTextureRect(sf::IntRect((currentCard.getValue() - 1)*CARD_SPRITE_WIDTH, (currentCard.getSuit() - 1) * CARD_SPRITE_HEIGHT, CARD_SPRITE_WIDTH, CARD_SPRITE_HEIGHT));
+	newCard->setPosition(yPosition, xPosition);
+	return *newCard;
 }
 
 int main()
@@ -304,6 +336,19 @@ int main()
 	doubleDownButton.setTriggerFunction(doubleDownAction);
 
 	sf::RenderWindow window(sf::VideoMode(1000, 800), "My window");
+
+	GameEngine ge = *gameEngine;
+	vector<Card> deckCards = deck->getDeckCards();
+	int money = player->getMoney();
+
+	bool firstTurnFlag = true;
+	bool keepMainLoopGoing = true;
+
+	bool firstHandBusted = false;
+	bool secondHandBusted = false;
+	bool dealerHandBusted = false;
+	int playerTotal1;
+
 	while (window.isOpen())
 	{
 		//setup event handling
@@ -315,6 +360,11 @@ int main()
 			enterBetButton.events(event);
 			increaseBetButton.events(event);
 			decreaseBetButton.events(event);
+			hitButton.events(event);
+			splitButton.events(event);
+			stayButton.events(event);
+			insuranceButton.events(event);
+			doubleDownButton.events(event);
 		}
 
 		//set window as handler of butttons
@@ -333,6 +383,7 @@ int main()
 		if (gameStage == 1)
 		{
 			gameStage++;
+			playerTurnNumber = 0; //resets the player turn counter
 			gameEngine->setPlayerBet(playerCurrentBet);
 
 			player->emptyHand(player->getPlayerHand());
@@ -341,89 +392,56 @@ int main()
 
 			dealer->dealCards(deck->getDeckCards(), player->getPlayerHand());
 
-			vector<sf::Sprite> dealerSprites = createCardSprites(dealer->printDealerHandWithHiddenCard(), 0);
+			vector<sf::Sprite> dealerSprites = createFirstRoundCardSprites(dealer->printDealerHandWithHiddenCard(), 0);
 			cardsToRender.insert(cardsToRender.end(), dealerSprites.begin(), dealerSprites.end());
-			vector<sf::Sprite> playerSprites = createCardSprites(player->getPlayerHand(), 1);
+			vector<sf::Sprite> playerSprites = createFirstRoundCardSprites(player->getPlayerHand(), 1);
 			cardsToRender.insert(cardsToRender.end(), playerSprites.begin(), playerSprites.end());
 		}
-		
-		/*
-		//GAME HANDLING LOOP STARTS
-		GameEngine ge = *gameEngine;
-		vector<Card> deckCards = deck->getDeckCards();
-		int money = player->getMoney();
 
-		ge.setSplit(false);
-		ge.setStand(false);
-
-		bool firstTurnFlag = true;
-		bool keepMainLoopGoing = true;
-
-		bool firstHandBusted = false;
-		bool secondHandBusted = false;
-		bool dealerHandBusted;
-		int playerTotal1;
-
-		do
+		if (gameStage == 2)
 		{
-			dealerHandBusted = false;
-			playerTotal1 = player->Person::calculateTotalAndPrintHand(player->getPlayerHand(), player->getPlayerHandValues(), true, "Player");
-
-			if (player->getPlayerHand().at(0).getValue() == player->getPlayerHand().at(1).getValue() && firstTurnFlag && ge.getPlayerBet() * 2 < money)
+			gameStage++;
+			if (player->getPlayerHand().at(0).getValue() == player->getPlayerHand().at(1).getValue() && playerTurnNumber == 0 && ge.getPlayerBet() * 2 < money)
 			{
-				ge.setSplit(true);
+				showSplit = true;
 			}
 			else
 			{
-				ge.setSplit(false);
+				showSplit = false;
 			}
 
-			if (dealer->getDealerHand().at(0).getValue() == 1 && firstTurnFlag)
+			if (dealer->getDealerHand().at(0).getValue() == 1 && playerTurnNumber == 0)
 			{
-				ge.setInsurance(true);
-			}
-			else
-			{
-				ge.setInsurance(false);
-			}
-
-			if (ge.getPlayerBet() * 2 < money && firstTurnFlag)
-			{
-				ge.setDouble(true);
+				showInsurance = true;
 			}
 			else
 			{
-				ge.setDouble(false);
+				showInsurance = false;
 			}
 
-			firstTurnFlag = false;
-
-			bool repeatLoopForUserInput = true;
-
-			//REPLACE WITH REAL USER INPUT
-
-			do
+			if (ge.getPlayerBet() * 2 < money && playerTurnNumber == 0)
 			{
-				ge.menuPrintingControl();
+				showDoubleDown = true;
+			}
+			else
+			{
+				showDoubleDown = false;
+			}
+		}
 
-				ge.setUserInputForMenu(ge.receiveUserMenuInput());
+		if (gameStage == 3)
+		{
+			playerTotal1 = player->Person::calculateTotalAndPrintHand(player->getPlayerHand(), player->getPlayerHandValues(), false, "Player");
 
-				repeatLoopForUserInput = ge.validateUserMenuInput();
-				cout << "\n";
-
-				if (!repeatLoopForUserInput)
+			if (userHits)
+			{
+				gameStage++;
+				userHits = false;
+				if (!userHasSplit)
 				{
-					cout << "The option you entered: " << ge.getUserInputForMenu() << " is invalid. \n\n";
-				}
-
-			} while (!repeatLoopForUserInput);
-
-			if (ge.getUserInputForMenu().compare("h") == 0 || ge.getUserInputForMenu().compare("H") == 0)
-			{
-				if (!ge.getSplit())
-				{
-					cout << "Player hits.\n";
-					ge.hitMethod(deckCards, player->getPlayerHand());
+					userCardXPosition += 80;
+					sf::Sprite playerSprite = createPlayerCardSprite(ge.hitMethod(deckCards, player->getPlayerHand()), userCardXPosition, userCardYPosition);
+					cardsToRender.push_back(playerSprite);
 					playerTotal1 = player->Person::calculateTotalAndPrintHand(player->getPlayerHand(), player->getPlayerHandValues(), true, "Player");
 				}
 				else
@@ -431,28 +449,41 @@ int main()
 					//TODO: add code for hitting with two hands
 				}
 			}
-			else if (ge.getUserInputForMenu().compare("s") == 0 || ge.getUserInputForMenu().compare("S") == 0)
+			else if (userStays)
 			{
+				userStays = false;
 				cout << "Player stays.\n";
-				break;
+				gameStage++;
 			}
-			else if (ge.getUserInputForMenu().compare("d") == 0 || ge.getUserInputForMenu().compare("D") == 0)
+			else if (userDoubleDowns)
 			{
-				cout << "Player hits.\n";
+				userDoubleDowns = false;
+				cout << "Player doubles down.\n";
 				ge.setPlayerBet(ge.getPlayerBet() * 2);
 				ge.hitMethod(deckCards, player->getPlayerHand());
 				playerTotal1 = player->Person::calculateTotalAndPrintHand(player->getPlayerHand(), player->getPlayerHandValues(), true, "Player");
-				break;
+				gameStage++;
 			}
-			else if (ge.getUserInputForMenu().compare("p") == 0 || ge.getUserInputForMenu().compare("P") == 0)
+			else if (userSplits)
 			{
+				userSplits = false;
 				ge.splitCards(player->getPlayerHand(), player->getPlayerHand2());
 				ge.setSplit(true);
 			}
-			else if (ge.getUserInputForMenu().compare("i") == 0 || ge.getUserInputForMenu().compare("I") == 0)
+			else if (userInsures)
 			{
+				userInsures = false;
 				//TODO: google these rules...
 			}
+		}
+
+		if (gameStage == 4)
+		{
+			//check to see if user has busted etc
+		}
+		/*
+		do
+		{
 
 			if (playerTotal1 > 21)
 			{
@@ -582,11 +613,11 @@ int main()
 
 		if (showUserButtons)
 		{
-			window.draw(hitButton);
-			window.draw(insuranceButton);
-			window.draw(splitButton);
-			window.draw(stayButton);
-			window.draw(doubleDownButton);
+			if(showHit) window.draw(hitButton);
+			if(showInsurance) window.draw(insuranceButton);
+			if(showSplit) window.draw(splitButton);
+			if(showStay) window.draw(stayButton);
+			if(showDoubleDown) window.draw(doubleDownButton);
 		}
 
 		//always shown

@@ -53,7 +53,7 @@ class GameEngine
 		void setStand(bool stand);
 		void setPlayerBet(int bet);
 
-		void hitMethod(vector<Card> &deckCards, vector<Card> &playerHand);
+		Card hitMethod(vector<Card> &deckCards, vector<Card> &playerHand);
 		void splitCards(vector<Card> &playerHand, vector<Card> &playerHand2);
 
 		string receiveUserMenuInput();
