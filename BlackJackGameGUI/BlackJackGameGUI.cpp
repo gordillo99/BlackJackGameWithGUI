@@ -20,9 +20,13 @@ void menuHandlingControl(GameEngine ge, vector<Card> &deckCards, Player& player,
 const int CARD_SPRITE_WIDTH = 73;
 const int CARD_SPRITE_HEIGHT = 98;
 
-//user's x position for cards
+//user's position for cards
 int userCardXPosition = 300;
 int userCardYPosition = 400;
+
+//dealer's position for cards
+int firstXPositionOfCards = 0;
+int firstYPositionOfCards = 0;
 
 //Vital variable for game flow and loop control 
 int gameStage = 0;
@@ -47,11 +51,20 @@ Button stayButton(font, { 70.f, 70.f });
 Button splitButton(font, { 110.f, 70.f });
 Button insuranceButton(font, { 160.f, 70.f });
 Button doubleDownButton(font, { 200.f, 70.f });
+Button playAgainButton(font, { 200.f, 70.f });
 
 //string declaration
 sf::Text playerCurrentBetText(to_string(playerCurrentBet), font);
 sf::Text playerCurrentMoneyText("Player's Money: " + to_string(playerMoneyCounter), font);
 sf::Text dealerHandText("Dealer's Hand", font);
+sf::Text playerHandText("Player's Hand", font);
+sf::Text playerBustedText("Player has busted", font);
+sf::Text dealerBustedText("Dealer has busted", font);
+sf::Text dealerTotalText("Total:", font);
+sf::Text playerTotalText("Total:", font);
+sf::Text gameStatusText("", font);
+sf::Text playerEarningsText("Player has earned", font);
+sf::Text gameOverText("", font);
 
 //show button flags
 bool showBettingGUI = true; //Shows the bet and increase/decrease bet buttons
@@ -61,6 +74,18 @@ bool showHit = true; //hit is always available
 bool showInsurance = false;
 bool showSplit = false;
 bool showStay = true;
+bool showPlayAgainButton = false;
+
+//show text flags
+bool showPlayerHandText = false;
+bool showDealerHandText = false;
+bool showPlayerBustedText = false;
+bool showDealerBustedText = false;
+bool showdealerTotalText = false;
+bool showPlayerTotalText = false;
+bool showGameStatusText = false;
+bool showPlayerEarningsText = false;
+bool showGameOverText = false;
 
 //user input flags
 bool userHits = false;
@@ -138,11 +163,14 @@ void doubleDownAction()
 	playerTurnNumber++;
 }
 
+void playAgainAction()
+{
+	gameStage = 1;
+}
+
 vector<sf::Sprite> createFirstRoundCardSprites(vector<Card> givenCards, int type)
 {
 	vector<sf::Sprite> createdSprites;
-	float firstXPositionOfCards = 0;
-	float firstYPositionOfCards = 0;
 
 	switch (type)
 	{
@@ -221,6 +249,46 @@ int main()
 	//loading font
 	font.loadFromFile("whitrabt.ttf");
 
+	dealerHandText.setCharacterSize(30);
+	dealerHandText.setStyle(sf::Text::Bold);
+	dealerHandText.setColor(sf::Color::White);
+	dealerHandText.setPosition(300, 130);
+
+	playerHandText.setCharacterSize(30);
+	playerHandText.setStyle(sf::Text::Bold);
+	playerHandText.setColor(sf::Color::White);
+	playerHandText.setPosition(380, 335);
+
+	dealerBustedText.setCharacterSize(30);
+	dealerBustedText.setStyle(sf::Text::Bold);
+	dealerBustedText.setColor(sf::Color::White);
+	dealerBustedText.setPosition(145, 10);
+
+	dealerTotalText.setCharacterSize(30);
+	dealerTotalText.setStyle(sf::Text::Bold);
+	dealerTotalText.setColor(sf::Color::White);
+	dealerTotalText.setPosition(580, 130);
+
+	playerTotalText.setCharacterSize(30);
+	playerTotalText.setStyle(sf::Text::Bold);
+	playerTotalText.setColor(sf::Color::White);
+	playerTotalText.setPosition(630, 335);
+
+	gameStatusText.setCharacterSize(30);
+	gameStatusText.setStyle(sf::Text::Bold);
+	gameStatusText.setColor(sf::Color::White);
+	gameStatusText.setPosition(333, 550);
+
+	playerEarningsText.setCharacterSize(30);
+	playerEarningsText.setStyle(sf::Text::Bold);
+	playerEarningsText.setColor(sf::Color::White);
+	playerEarningsText.setPosition(145, 10);
+
+	gameOverText.setCharacterSize(30);
+	gameOverText.setStyle(sf::Text::Bold);
+	gameOverText.setColor(sf::Color::White);
+	gameOverText.setPosition(500, 700);
+
 	playerCurrentBetText.setCharacterSize(30);
 	playerCurrentBetText.setStyle(sf::Text::Bold);
 	playerCurrentBetText.setColor(sf::Color::White);
@@ -240,6 +308,7 @@ int main()
 	splitButton.setString("Split");
 	insuranceButton.setString("Insurance");
 	doubleDownButton.setString("Double Down");
+	playAgainButton.setString("Play Again");
 
 	//set button position
 	enterBetButton.setPosition(320, 0);
@@ -250,6 +319,7 @@ int main()
 	splitButton.setPosition(490,700);
 	insuranceButton.setPosition(600,700);
 	doubleDownButton.setPosition(760, 700);
+	playAgainButton.setPosition(333,650);
 
 	//set button colors
 	enterBetButton.setBackgroundColor(sf::Color(59, 134, 134));
@@ -300,6 +370,12 @@ int main()
 	decreaseBetButton.setOverTextColor(sf::Color(207, 240, 158));
 	decreaseBetButton.setOverOutlineColor(sf::Color(168, 219, 168));
 
+	playAgainButton.setBackgroundColor(sf::Color(59, 134, 134));
+	playAgainButton.setTextColor(sf::Color(11, 72, 107));
+	playAgainButton.setOverBackgroundColor(sf::Color(121, 189, 154));
+	playAgainButton.setOverTextColor(sf::Color(207, 240, 158));
+	playAgainButton.setOverOutlineColor(sf::Color(168, 219, 168));
+
 	//set button thickness and color
 	enterBetButton.setOutlineThickness(1.f);
 	enterBetButton.setOutlineColor(sf::Color(168, 219, 168));
@@ -325,6 +401,9 @@ int main()
 	insuranceButton.setOutlineThickness(1.f);
 	insuranceButton.setOutlineColor(sf::Color(168, 219, 168));
 
+	playAgainButton.setOutlineThickness(1.f);
+	playAgainButton.setOutlineColor(sf::Color(168, 219, 168));
+
 	//set trigger functions
 	enterBetButton.setTriggerFunction(betAction);
 	increaseBetButton.setTriggerFunction(increaseAction);
@@ -334,6 +413,7 @@ int main()
 	splitButton.setTriggerFunction(splitAction);
 	insuranceButton.setTriggerFunction(insuranceAction);
 	doubleDownButton.setTriggerFunction(doubleDownAction);
+	playAgainButton.setTriggerFunction(playAgainAction);
 
 	sf::RenderWindow window(sf::VideoMode(1000, 800), "My window");
 
@@ -368,6 +448,7 @@ int main()
 			stayButton.events(event);
 			insuranceButton.events(event);
 			doubleDownButton.events(event);
+			playAgainButton.events(event);
 		}
 
 		//set window as handler of butttons
@@ -379,6 +460,7 @@ int main()
 		stayButton.handler(window);
 		insuranceButton.handler(window);
 		doubleDownButton.handler(window);
+		playAgainButton.handler(window);
 		
 		playerCurrentMoneyText.setString("Player's Money: " + to_string(playerMoneyCounter));
 
@@ -395,6 +477,16 @@ int main()
 			playerTotal1 = 0;
 			playerTotal2 = 0;
 
+			showPlayerBustedText = false;
+			showDealerBustedText = false;
+			showdealerTotalText = false;
+			showPlayerTotalText = false;
+			showGameStatusText = false;
+			showPlayerEarningsText = false;
+			showGameOverText = false;
+
+			showPlayAgainButton = false;
+
 			gameStage++;
 			playerTurnNumber = 0; //resets the player turn counter
 			gameEngine->setPlayerBet(playerCurrentBet);
@@ -405,10 +497,16 @@ int main()
 
 			dealer->dealCards(deck->getDeckCards(), player->getPlayerHand());
 
+			cardsToRender.erase(cardsToRender.begin(), cardsToRender.end());
+
 			vector<sf::Sprite> dealerSprites = createFirstRoundCardSprites(dealer->printDealerHandWithHiddenCard(), 0);
 			cardsToRender.insert(cardsToRender.end(), dealerSprites.begin(), dealerSprites.end());
 			vector<sf::Sprite> playerSprites = createFirstRoundCardSprites(player->getPlayerHand(), 1);
 			cardsToRender.insert(cardsToRender.end(), playerSprites.begin(), playerSprites.end());
+
+			//show the dealer hand text
+			showDealerHandText = true;
+			showPlayerHandText = true;
 		}
 
 		if (gameStage == 2)
@@ -454,7 +552,7 @@ int main()
 					userCardXPosition += 80;
 					sf::Sprite playerSprite = createPlayerCardSprite(ge.hitMethod(deckCards, player->getPlayerHand()), userCardXPosition, userCardYPosition);
 					cardsToRender.push_back(playerSprite);
-					playerTotal1 = player->Person::calculateTotalAndPrintHand(player->getPlayerHand(), player->getPlayerHandValues(), true, "Player");
+					playerTotal1 = player->Person::calculateTotalAndPrintHand(player->getPlayerHand(), player->getPlayerHandValues(), false, "Player");
 				}
 				else
 				{
@@ -464,13 +562,11 @@ int main()
 			else if (userStays)
 			{
 				userStays = false;
-				cout << "Player stays.\n";
 				gameStage++;
 			}
 			else if (userDoubleDowns)
 			{
 				userDoubleDowns = false;
-				cout << "Player doubles down.\n";
 				ge.setPlayerBet(ge.getPlayerBet() * 2);
 				ge.hitMethod(deckCards, player->getPlayerHand());
 				playerTotal1 = player->Person::calculateTotalAndPrintHand(player->getPlayerHand(), player->getPlayerHandValues(), true, "Player");
@@ -487,6 +583,10 @@ int main()
 				userInsures = false;
 				//TODO: google these rules...
 			}
+
+			//update player's total
+			playerTotalText.setString("Total: " + to_string(playerTotal1));
+			showPlayerTotalText = true;
 
 			if (playerTotal1 > 21)
 			{
@@ -523,25 +623,38 @@ int main()
 		{
 			dealersTotal = 0;
 			bool keepLoopGoing = false;
+			showUserButtons = false;
+			vector<Card> dealersCards = dealer->getDealerHand();
+
+			if (firstHandBusted)
+			{
+				player->setMoney(money - playerCurrentBet);
+				playerMoneyCounter -= playerCurrentBet;
+			}
+			else
+			{
+				//show dealer's hand
+				cardsToRender.erase(cardsToRender.begin()); //deletes the dealer's card that is backward
+				firstXPositionOfCards = 300;
+				firstYPositionOfCards = 200;
+				for (vector<Card>::iterator it = dealersCards.begin() + 1; it != dealersCards.end(); ++it)
+				{
+					firstXPositionOfCards += 80;
+					cardsToRender.push_back(createPlayerCardSprite(*it, firstXPositionOfCards, firstYPositionOfCards));
+				}
+			}
 
 			do
 			{
-				if (firstHandBusted)
-				{
-					cout << "Player's hand is " << playerTotal1 << ". Player has busted.\nPlayer has lost $" << playerCurrentBet << "\n";
-					player->setMoney(money - playerCurrentBet);
-					playerMoneyCounter -= playerCurrentBet;
-
-				}
-				else
+				
+				if (!firstHandBusted)
 				{
 					//prints dealer's hand and calculates its value
-					dealersTotal = dealer->calculateTotalAndPrintHand(dealer->getDealerHand(), dealer->getDealerHandValues(), true, "Dealer");
+					dealersTotal = dealer->calculateTotalAndPrintHand(dealer->getDealerHand(), dealer->getDealerHandValues(), false, "Dealer");
 
 					if (dealersTotal > 21)
 					{
 						//indicate that dealer has busted
-						cout << "Dealer's hand has busted with a total of " << dealersTotal << "\n";
 						dealerHandBusted = true;
 						break;
 					}
@@ -552,7 +665,6 @@ int main()
 					else if (dealersTotal < 17)
 					{
 						//dealer hits
-						cout << "Dealer hits.\n";
 						ge.hitMethod(deckCards, dealer->getDealerHand());
 						keepLoopGoing = true;
 					}
@@ -561,43 +673,69 @@ int main()
 			} while (keepLoopGoing);
 			gameStage++;
 		}
-		//TODO: CHANGE ALL OF THIS TO GRAPHICAL TEXT
+
 		if (gameStage == 5)
 		{
 			if (!firstHandBusted)
 			{
+				dealerTotalText.setString("Total: " + to_string(dealersTotal));
+				showdealerTotalText = true;
+
 				if (!dealerHandBusted)
 				{
-					cout << "Dealer's Total: " << dealersTotal << "\nPlayers's Total: " << playerTotal1 << "\n";
 					if (dealersTotal > playerTotal1)
 					{
-						cout << "Dealer has a higher hand. You have lost $" << playerCurrentBet << ".\n";
+						gameStatusText.setString("Dealer has a higher hand.\nYou have lost $" + to_string(playerCurrentBet));
 						player->setMoney(money - playerCurrentBet);
 						playerMoneyCounter -= playerCurrentBet;
 					}
 					else if (dealersTotal == playerTotal1)
 					{
-						cout << "Dealer and Player are tied. No money was lost/earnt.\n";
+						gameStatusText.setString("Dealer and Player are tied.\nNo money was lost/earnt.");
+						
 					}
 					else if (playerTotal1 > dealersTotal)
 					{
-						cout << "Player has a higher hand. You have won $" << playerCurrentBet << ".\n";
+						gameStatusText.setString("Player has a higher hand.\nYou have won $" + to_string(playerCurrentBet));
 						player->setMoney(money + playerCurrentBet);
 						playerMoneyCounter += playerCurrentBet;
 					}
 				}
 				else
 				{
-					cout << "You have won $" << ge.getPlayerBet() << ".\n";
-					player->setMoney(money + ge.getPlayerBet());
+					gameStatusText.setString("Dealer has busted.\nYou have won $" + to_string(playerCurrentBet));
+					player->setMoney(money + playerCurrentBet);
 				}
 			}
-
-			if (player->getMoney() <= 0)
+			else
 			{
-				cout << "\n GAME OVER\n\n You have run out of money. Insert more money to play again.\n";
-				exit(0);
+				gameStatusText.setString("Player has busted.\nPlayer has lost $" + to_string(playerCurrentBet));
 			}
+			showGameStatusText = true;
+			gameStage++;
+		}
+
+		if (gameStage == 6)
+		{
+			if (playerMoneyCounter <= 0)
+			{
+				gameOverText.setString("\n GAME OVER\n\n You have run out of money. Insert more money to play again.\n");
+				showGameOverText = true;
+				//exit(0);
+				//ADD PLAY AGAIN
+			}
+			else
+			{
+				showPlayAgainButton = true;
+			}
+			gameStage++;
+		}
+
+		if (gameStage == 7)
+		{
+			//play again
+
+			//exit
 		}
 
 		window.clear();
@@ -611,6 +749,7 @@ int main()
 			window.draw(playerCurrentBetText);
 		}
 
+		//shows the main user action buttons
 		if (showUserButtons)
 		{
 			if(showHit) window.draw(hitButton);
@@ -620,13 +759,31 @@ int main()
 			if(showDoubleDown) window.draw(doubleDownButton);
 		}
 
+		//show play again button
+		if (showPlayAgainButton)
+		{
+			window.draw(playAgainButton);
+		}
+
 		//always shown
 		window.draw(playerCurrentMoneyText);
+
+		//draw the required texts
+		if (showPlayerBustedText) window.draw(playerBustedText);
+		if (showDealerBustedText) window.draw(dealerBustedText);
+		if (showdealerTotalText) window.draw(dealerTotalText);
+		if (showPlayerTotalText) window.draw(playerTotalText);
+		if (showGameStatusText) window.draw(gameStatusText);
+		if (showPlayerEarningsText) window.draw(playerEarningsText);
+		if (showGameOverText) window.draw(gameOverText);
+		if (showPlayerHandText) window.draw(playerHandText);
+		if (showDealerHandText) window.draw(dealerHandText);
 
 		for (vector<sf::Sprite>::iterator it = cardsToRender.begin(); it != cardsToRender.end(); ++it)
 		{
 			window.draw(*it);
 		}
+
 		//TODO:
 		//ADD DEALLOCATING CODE FOR CARDSTORENDER AND ITS TEXTURES!!!!!!!!!!!!!!!
 
