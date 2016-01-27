@@ -31,11 +31,8 @@ int firstYPositionOfCards = 0;
 //Vital variable for game flow and loop control 
 int gameStage = 0;
 
-/*
-	update the game stage catalogue
-*/
-
 sf::Font font;
+vector<sf::Sprite> cardsToRender;
 
 //player stat variables
 int playerCurrentBet = 0;
@@ -107,7 +104,7 @@ void betAction()
 	//triggered method
 	showBettingGUI = false;
 	showUserButtons = true;
-	gameStage++; //move to stage 1
+	gameStage = 1; //move to stage 1
 	/*TODO: ADD REST OF THE CODE*/
 }
 
@@ -165,7 +162,17 @@ void doubleDownAction()
 
 void playAgainAction()
 {
-	gameStage = 1;
+	showBettingGUI = true;
+	playerCurrentBet = 0;
+	showDealerHandText = false;
+	showPlayerHandText = false;
+	showPlayerTotalText = false;
+	showdealerTotalText = false;
+	showGameStatusText = false;
+	showGameOverText = false;
+	showPlayAgainButton = false;
+	playerCurrentBetText.setString(to_string(playerCurrentBet));
+	cardsToRender.erase(cardsToRender.begin(), cardsToRender.end());
 }
 
 vector<sf::Sprite> createFirstRoundCardSprites(vector<Card> givenCards, int type)
@@ -243,8 +250,6 @@ int main()
 	unique_ptr<Deck> deck(new Deck());
 	unique_ptr<Dealer> dealer(new Dealer());
 	unique_ptr<GameEngine> gameEngine(new GameEngine());
-
-	vector<sf::Sprite> cardsToRender; 
 
 	//loading font
 	font.loadFromFile("whitrabt.ttf");
@@ -476,6 +481,8 @@ int main()
 			dealerHandBusted = false;
 			playerTotal1 = 0;
 			playerTotal2 = 0;
+			userCardXPosition = 300;
+			userCardYPosition = 400;
 
 			showPlayerBustedText = false;
 			showDealerBustedText = false;
@@ -567,9 +574,9 @@ int main()
 			else if (userDoubleDowns)
 			{
 				userDoubleDowns = false;
-				ge.setPlayerBet(ge.getPlayerBet() * 2);
+				playerCurrentBet = playerCurrentBet * 2;
 				ge.hitMethod(deckCards, player->getPlayerHand());
-				playerTotal1 = player->Person::calculateTotalAndPrintHand(player->getPlayerHand(), player->getPlayerHandValues(), true, "Player");
+				playerTotal1 = player->Person::calculateTotalAndPrintHand(player->getPlayerHand(), player->getPlayerHandValues(), false, "Player");
 				gameStage++;
 			}
 			else if (userSplits)
@@ -629,7 +636,6 @@ int main()
 			if (firstHandBusted)
 			{
 				player->setMoney(money - playerCurrentBet);
-				playerMoneyCounter -= playerCurrentBet;
 			}
 			else
 			{
@@ -687,7 +693,6 @@ int main()
 					{
 						gameStatusText.setString("Dealer has a higher hand.\nYou have lost $" + to_string(playerCurrentBet));
 						player->setMoney(money - playerCurrentBet);
-						playerMoneyCounter -= playerCurrentBet;
 					}
 					else if (dealersTotal == playerTotal1)
 					{
@@ -698,7 +703,7 @@ int main()
 					{
 						gameStatusText.setString("Player has a higher hand.\nYou have won $" + to_string(playerCurrentBet));
 						player->setMoney(money + playerCurrentBet);
-						playerMoneyCounter += playerCurrentBet;
+						playerMoneyCounter += 2*playerCurrentBet;
 					}
 				}
 				else
@@ -734,7 +739,7 @@ int main()
 		if (gameStage == 7)
 		{
 			//play again
-
+			
 			//exit
 		}
 
